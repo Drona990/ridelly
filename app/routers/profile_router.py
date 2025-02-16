@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.controllers.profile_controller import create_or_update_profile, get_profile
@@ -33,18 +34,19 @@ def create_user_profile_public(
     try:
         user_uuid = uuid.UUID(profile_data.user_id)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid UUID format for user_id")
+        return JSONResponse(status_code=400, content={"success": False, "message": "Invalid UUID format for user_id"})
 
     user = db.query(User).filter(User.user_id == user_uuid, User.email == profile_data.email).first()
     
     if not user or not user.is_verified:
-        raise HTTPException(status_code=403, detail="User has not verified OTP. Profile creation denied.")
+        return JSONResponse(status_code=403, content= {"success": False , "message": "User has not verified OTP. Profile creation denied."})
 
     profile = create_or_update_profile(db, user_uuid, profile_data.email, profile_data)
     
     token = create_access_token({"user_id": str(profile.user_id), "email": profile.email})
 
     return ProfileWithTokenResponse(
+        success = True,
         message="Profile created successfully",
         access_token=token,
         token_type="Bearer",

@@ -1,3 +1,4 @@
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.profile_model import Profile
@@ -27,5 +28,5 @@ def get_profile(db: Session, user_id: uuid.UUID):
     profile = db.query(Profile).filter(Profile.user_id == user_id).first()
     print(profile)
     if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        return JSONResponse(status_code=404, content={"success":False, "message": "Profile not found."})
     return profile

@@ -18,6 +18,7 @@ class ProfileCreateRequest(ProfileCreate):
     email: str
 
 class ProfileWithTokenResponse(BaseModel):
+    success: bool = True
     message: str
     access_token: str
     token_type: str
